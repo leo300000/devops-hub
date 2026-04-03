@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block announce %}
+<div class="lofi-banner">
+  🎵 late night coding sessions &nbsp;·&nbsp;
+  <a href="https://github.com/leo300000/devops-hub">★ Star on GitHub</a>
+  &nbsp;·&nbsp; ☕ lofi beats & devops vibes
+</div>
+{% endblock %}
+
+{% block footer %}
+{{ super() }}
+<div class="lofi-footer">
+  <img
+    src="https://media.giphy.com/media/tLD05H89Sokz90GAhy/giphy.gif"
+    width="160"
+    alt="lofi girl"
+  />
+  <div class="lofi-footer-text">
+    <span>☕ DevOps Hub</span><br>
+    Tutoriels de <span>débutant</span> à <span>avancé</span><br>
+    Terraform · Ansible · Azure · Kubernetes · Git · CI/CD<br>
+    <br>
+    Made with 🎵 lofi & ❤️ by
+    <a href="https://github.com/leo300000" style="color: var(--lofi-amber)">leo300000</a>
+  </div>
+  <img
+    src="https://media.giphy.com/media/tLD05H89Sokz90GAhy/giphy.gif"
+    width="160"
+    alt="lofi girl"
+    style="transform: scaleX(-1);"
+  />
+</div>
+{% endblock %}

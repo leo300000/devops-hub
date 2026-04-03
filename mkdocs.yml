@@ -6,6 +6,7 @@ site_url: https://leo300000.github.io/devops-hub
 theme:
   name: material
   language: fr
+  custom_dir: docs/overrides
   palette:
     - scheme: slate
       primary: deep orange
@@ -20,8 +21,8 @@ theme:
         icon: material/weather-sunny
         name: Mode sombre
   font:
-    text: Inter
-    code: JetBrains Mono
+    text: Quicksand
+    code: Fira Code
   features:
     - navigation.tabs
     - navigation.tabs.sticky
@@ -77,6 +78,9 @@ nav:
     - 🟢 Débutant: cicd/debutant.md
     - 🟡 Intermédiaire: cicd/intermediaire.md
     - 🔴 Avancé: cicd/avance.md
+
+extra_css:
+  - stylesheets/lofi.css
 
 plugins:
   - search:
