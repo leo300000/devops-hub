@@ -12,14 +12,8 @@ theme:
       primary: deep purple
       accent: purple
       toggle:
-        icon: material/weather-night
-        name: Mode clair
-    - scheme: default
-      primary: deep purple
-      accent: purple
-      toggle:
         icon: material/weather-sunny
-        name: Mode sombre
+        name: Mode sombre (pas encore disponible)
   font:
     text: Quicksand
     code: Fira Code
