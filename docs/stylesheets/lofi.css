@@ -1,41 +1,47 @@
-/* ─── LOFI GIRL THEME ─────────────────────────────────────── */
+/* ─── LOFI GIRL THEME — PURPLE ────────────────────────────── */
 
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500&family=Quicksand:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500&family=Quicksand:wght@400;500;600&display=swap');
 
-/* ─── Palette de couleurs lofi ───────────────────────────── */
+/* ─── Palette violette lofi ──────────────────────────────── */
 :root {
-  --lofi-bg:          #110b04;
-  --lofi-bg-light:    #1e1208;
-  --lofi-bg-card:     #261709;
-  --lofi-amber:       #ffb347;
-  --lofi-orange:      #f4a261;
-  --lofi-burnt:       #e76f51;
-  --lofi-cream:       #ffd6a5;
-  --lofi-muted:       #a08060;
-  --lofi-border:      #3d2a14;
+  --lofi-bg:          #0e0b1a;
+  --lofi-bg-light:    #16122a;
+  --lofi-bg-card:     #1d1835;
+  --lofi-purple:      #b39ddb;
+  --lofi-lavender:    #ce93d8;
+  --lofi-pink:        #f48fb1;
+  --lofi-text:        #e8e0f5;
+  --lofi-muted:       #8878aa;
+  --lofi-border:      #2d2550;
 }
 
-/* ─── Background global ──────────────────────────────────── */
+/* ─── Palette Material override ──────────────────────────── */
 [data-md-color-scheme="slate"] {
-  --md-default-bg-color:        var(--lofi-bg);
-  --md-default-fg-color:        var(--lofi-cream);
-  --md-default-fg-color--light: var(--lofi-muted);
+  --md-default-bg-color:          var(--lofi-bg);
+  --md-default-fg-color:          var(--lofi-text);
+  --md-default-fg-color--light:   var(--lofi-muted);
+  --md-default-fg-color--lighter: #5a4f80;
 
-  --md-primary-fg-color:        var(--lofi-amber);
-  --md-primary-bg-color:        var(--lofi-bg);
-  --md-accent-fg-color:         var(--lofi-orange);
+  --md-primary-fg-color:          var(--lofi-purple);
+  --md-primary-bg-color:          var(--lofi-bg);
+  --md-accent-fg-color:           var(--lofi-lavender);
 
-  --md-code-bg-color:           var(--lofi-bg-card);
-  --md-code-fg-color:           var(--lofi-cream);
+  --md-code-bg-color:             var(--lofi-bg-card);
+  --md-code-fg-color:             var(--lofi-text);
 
-  --md-typeset-color:           var(--lofi-cream);
-  --md-typeset-a-color:         var(--lofi-amber);
+  --md-typeset-color:             var(--lofi-text);
+  --md-typeset-a-color:           var(--lofi-purple);
+
+  --md-footer-bg-color:           var(--lofi-bg-light);
+  --md-footer-fg-color:           var(--lofi-text);
 }
 
 /* ─── Typographie ────────────────────────────────────────── */
 body, .md-typeset {
   font-family: 'Quicksand', sans-serif;
-  font-weight: 400;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--lofi-text);
 }
 
 .md-typeset code,
@@ -44,21 +50,30 @@ body, .md-typeset {
   font-family: 'Fira Code', monospace !important;
 }
 
-/* ─── Header / Nav ───────────────────────────────────────── */
+/* ─── Header ─────────────────────────────────────────────── */
 .md-header {
-  background: linear-gradient(135deg, #1e1208 0%, #2d1a08 100%);
+  background: linear-gradient(135deg, #16122a 0%, #1d1835 100%);
   border-bottom: 1px solid var(--lofi-border);
-  backdrop-filter: blur(10px);
 }
 
+.md-header__title {
+  color: var(--lofi-text) !important;
+}
+
+/* ─── Tabs de navigation ─────────────────────────────────── */
 .md-tabs {
-  background: linear-gradient(135deg, #261709 0%, #1e1208 100%);
+  background: #13102200;
   border-bottom: 1px solid var(--lofi-border);
+}
+
+.md-tabs__link {
+  color: var(--lofi-muted) !important;
+  opacity: 1 !important;
 }
 
 .md-tabs__link--active,
 .md-tabs__link:hover {
-  color: var(--lofi-amber) !important;
+  color: var(--lofi-purple) !important;
 }
 
 /* ─── Sidebar ────────────────────────────────────────────── */
@@ -66,51 +81,65 @@ body, .md-typeset {
   background-color: var(--lofi-bg-light);
 }
 
-.md-nav__link--active,
+.md-nav__title {
+  color: var(--lofi-lavender) !important;
+}
+
+.md-nav__link {
+  color: var(--lofi-muted) !important;
+}
+
 .md-nav__link:hover {
-  color: var(--lofi-amber) !important;
+  color: var(--lofi-purple) !important;
 }
 
 .md-nav__link--active {
-  border-left: 2px solid var(--lofi-amber);
+  color: var(--lofi-purple) !important;
+  border-left: 2px solid var(--lofi-purple);
   padding-left: 8px;
 }
 
 /* ─── Contenu principal ──────────────────────────────────── */
-.md-content {
-  background-color: var(--lofi-bg);
-}
-
-.md-main {
-  background-color: var(--lofi-bg);
+.md-content__inner {
+  padding-top: 1.5rem;
 }
 
 /* ─── Titres ─────────────────────────────────────────────── */
 .md-typeset h1 {
-  color: var(--lofi-amber);
+  color: var(--lofi-purple);
   font-weight: 600;
   border-bottom: 1px solid var(--lofi-border);
-  padding-bottom: 0.3em;
+  padding-bottom: 0.4em;
+  animation: fadeInPurple 0.5s ease-out;
 }
 
 .md-typeset h2 {
-  color: var(--lofi-orange);
+  color: var(--lofi-lavender);
   font-weight: 600;
 }
 
 .md-typeset h3 {
-  color: var(--lofi-cream);
+  color: var(--lofi-text);
   font-weight: 500;
+}
+
+.md-typeset h4, .md-typeset h5 {
+  color: var(--lofi-muted);
+}
+
+@keyframes fadeInPurple {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ─── Liens ──────────────────────────────────────────────── */
 .md-typeset a {
-  color: var(--lofi-amber);
+  color: var(--lofi-purple);
   text-decoration: none;
 }
 
 .md-typeset a:hover {
-  color: var(--lofi-orange);
+  color: var(--lofi-lavender);
   text-decoration: underline;
 }
 
@@ -119,84 +148,104 @@ body, .md-typeset {
   background-color: var(--lofi-bg-card) !important;
   border: 1px solid var(--lofi-border);
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
 }
 
-.md-typeset code {
+/* Inline code */
+.md-typeset code:not(.highlight code) {
   background-color: var(--lofi-bg-card);
-  color: var(--lofi-amber);
+  color: var(--lofi-lavender);
+  border: 1px solid var(--lofi-border);
   border-radius: 4px;
-  padding: 1px 5px;
+  padding: 1px 6px;
   font-size: 0.88em;
 }
 
-/* Coloration syntaxique warm */
-.highlight .kn, .highlight .k  { color: #f4a261; }  /* keywords */
-.highlight .s,  .highlight .s1 { color: #a8d8a8; }  /* strings */
-.highlight .c,  .highlight .c1 { color: var(--lofi-muted); font-style: italic; }  /* comments */
-.highlight .nf { color: #ffb347; }  /* function names */
-.highlight .mi, .highlight .mf { color: #ff9f7f; }  /* numbers */
+/* Coloration syntaxique purple */
+.highlight .kn, .highlight .k, .highlight .kd { color: #ce93d8; font-weight: 500; } /* keywords */
+.highlight .s,  .highlight .s1, .highlight .s2 { color: #a8d8a8; }                  /* strings */
+.highlight .c,  .highlight .c1, .highlight .cm  { color: var(--lofi-muted); font-style: italic; } /* comments */
+.highlight .nf, .highlight .nb                  { color: #b39ddb; }                  /* fonctions */
+.highlight .mi, .highlight .mf                  { color: #f48fb1; }                  /* nombres */
+.highlight .nn, .highlight .nc                  { color: #80cbc4; }                  /* classes */
+.highlight .o                                   { color: #ce93d8; }                  /* opérateurs */
 
-/* ─── Admonitions (info, tip, warning...) ────────────────── */
+/* ─── Admonitions ────────────────────────────────────────── */
 .md-typeset .admonition,
 .md-typeset details {
   background-color: var(--lofi-bg-card);
-  border-color: var(--lofi-border);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  border-left-width: 3px;
 }
 
 .md-typeset .admonition-title,
 .md-typeset summary {
-  background-color: rgba(255, 179, 71, 0.1);
+  font-weight: 600;
+  font-family: 'Quicksand', sans-serif;
 }
 
-.md-typeset .tip > .admonition-title  { background-color: rgba(244, 162, 97, 0.15); }
-.md-typeset .info > .admonition-title { background-color: rgba(255, 179, 71, 0.15); }
-.md-typeset .warning > .admonition-title { background-color: rgba(231, 111, 81, 0.15); }
-.md-typeset .danger > .admonition-title  { background-color: rgba(231, 111, 81, 0.2); }
-.md-typeset .quote > .admonition-title  { background-color: rgba(160, 128, 96, 0.2); }
+/* tip */
+.md-typeset .tip   { border-color: var(--lofi-purple); }
+.md-typeset .tip > .admonition-title { background: rgba(179,157,219,0.12); color: var(--lofi-purple); }
+
+/* info */
+.md-typeset .info  { border-color: var(--lofi-lavender); }
+.md-typeset .info > .admonition-title { background: rgba(206,147,216,0.12); color: var(--lofi-lavender); }
+
+/* quote */
+.md-typeset .quote { border-color: var(--lofi-muted); }
+.md-typeset .quote > .admonition-title { background: rgba(136,120,170,0.12); color: var(--lofi-muted); }
+
+/* warning */
+.md-typeset .warning { border-color: #ffb347; }
+.md-typeset .warning > .admonition-title { background: rgba(255,179,71,0.1); color: #ffb347; }
+
+/* danger */
+.md-typeset .danger { border-color: var(--lofi-pink); }
+.md-typeset .danger > .admonition-title { background: rgba(244,143,177,0.12); color: var(--lofi-pink); }
+
+/* success */
+.md-typeset .success { border-color: #a8d8a8; }
+.md-typeset .success > .admonition-title { background: rgba(168,216,168,0.1); color: #a8d8a8; }
 
 /* ─── Tables ─────────────────────────────────────────────── */
 .md-typeset table:not([class]) {
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--lofi-border);
+  width: 100%;
 }
 
 .md-typeset table:not([class]) th {
   background-color: var(--lofi-bg-card);
-  color: var(--lofi-amber);
+  color: var(--lofi-purple);
+  font-weight: 600;
   border-bottom: 2px solid var(--lofi-border);
 }
 
-.md-typeset table:not([class]) tr:hover {
-  background-color: rgba(255, 179, 71, 0.05);
+.md-typeset table:not([class]) td {
+  color: var(--lofi-text);
+  border-color: var(--lofi-border);
 }
 
-.md-typeset table:not([class]) td {
-  border-color: var(--lofi-border);
+.md-typeset table:not([class]) tr:hover td {
+  background-color: rgba(179,157,219,0.05);
 }
 
 /* ─── Tabs (=== "tab" ===) ───────────────────────────────── */
 .md-typeset .tabbed-labels > label {
   color: var(--lofi-muted);
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 500;
 }
 
-.md-typeset .tabbed-labels > label:hover,
+.md-typeset .tabbed-labels > label:hover {
+  color: var(--lofi-purple);
+}
+
 .md-typeset .tabbed-labels > [data-md-state=active] {
-  color: var(--lofi-amber) !important;
-  border-color: var(--lofi-amber) !important;
-}
-
-/* ─── Footer ─────────────────────────────────────────────── */
-.md-footer {
-  background: linear-gradient(135deg, #1e1208 0%, #110b04 100%);
-  border-top: 1px solid var(--lofi-border);
-}
-
-.md-footer-meta {
-  background-color: var(--lofi-bg);
+  color: var(--lofi-purple) !important;
+  border-color: var(--lofi-purple) !important;
 }
 
 /* ─── Search ─────────────────────────────────────────────── */
@@ -207,95 +256,103 @@ body, .md-typeset {
 }
 
 .md-search__input {
-  color: var(--lofi-cream);
+  color: var(--lofi-text) !important;
 }
 
-/* ─── Scrollbar lofi ─────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--lofi-bg);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--lofi-border);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--lofi-amber);
+.md-search__input::placeholder {
+  color: var(--lofi-muted) !important;
 }
 
-/* ─── Bandeau lofi girl en haut ──────────────────────────── */
-.lofi-banner {
-  background: linear-gradient(135deg, #1e1208, #2d1a08);
+/* ─── Footer ─────────────────────────────────────────────── */
+.md-footer {
+  background: var(--lofi-bg-light);
+  border-top: 1px solid var(--lofi-border);
+}
+
+.md-footer-meta {
+  background-color: var(--lofi-bg);
+}
+
+.md-footer__link {
+  color: var(--lofi-muted) !important;
+}
+
+.md-footer__link:hover {
+  color: var(--lofi-purple) !important;
+}
+
+/* ─── Bandeau annonce ────────────────────────────────────── */
+.md-banner {
+  background: linear-gradient(135deg, #1d1835, #16122a);
   border-bottom: 1px solid var(--lofi-border);
-  text-align: center;
-  padding: 6px 0;
-  font-size: 0.8em;
   color: var(--lofi-muted);
-  letter-spacing: 0.05em;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.8em;
 }
 
 .lofi-banner a {
-  color: var(--lofi-amber) !important;
+  color: var(--lofi-purple) !important;
 }
 
-/* ─── Gif lofi dans le footer ────────────────────────────── */
+/* ─── Footer lofi custom ─────────────────────────────────── */
 .lofi-footer {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;
-  padding: 16px;
-  background: linear-gradient(135deg, #1e1208, #110b04);
+  gap: 24px;
+  padding: 20px 16px;
+  background: linear-gradient(135deg, #16122a, #0e0b1a);
   border-top: 1px solid var(--lofi-border);
+  flex-wrap: wrap;
 }
 
 .lofi-footer img {
-  border-radius: 8px;
-  opacity: 0.85;
-  transition: opacity 0.3s;
+  border-radius: 10px;
+  opacity: 0.9;
+  transition: opacity 0.3s, transform 0.3s;
+  border: 1px solid var(--lofi-border);
 }
 
 .lofi-footer img:hover {
   opacity: 1;
+  transform: scale(1.03);
 }
 
 .lofi-footer-text {
   color: var(--lofi-muted);
   font-size: 0.85em;
   text-align: center;
-  line-height: 1.8;
+  line-height: 2;
+  font-family: 'Quicksand', sans-serif;
 }
 
 .lofi-footer-text span {
-  color: var(--lofi-amber);
+  color: var(--lofi-purple);
+  font-weight: 600;
 }
 
-/* ─── Animation douce du titre principal ─────────────────── */
-.md-typeset h1 {
-  animation: fadeInAmber 0.6s ease-out;
+.lofi-footer-text a {
+  color: var(--lofi-lavender) !important;
+  text-decoration: none;
 }
 
-@keyframes fadeInAmber {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-    color: var(--lofi-orange);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    color: var(--lofi-amber);
-  }
-}
+/* ─── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: var(--lofi-bg); }
+::-webkit-scrollbar-thumb  { background: var(--lofi-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--lofi-purple); }
 
-/* ─── Bouton copy code ───────────────────────────────────── */
-.md-clipboard {
+/* ─── Bouton copy ────────────────────────────────────────── */
+.md-clipboard { color: var(--lofi-muted) !important; }
+.md-clipboard:hover { color: var(--lofi-purple) !important; }
+
+/* ─── Breadcrumbs ────────────────────────────────────────── */
+.md-nav__link--passed {
   color: var(--lofi-muted) !important;
 }
 
-.md-clipboard:hover {
-  color: var(--lofi-amber) !important;
+/* ─── Tag/Badge de version dans les titres ───────────────── */
+.md-typeset .md-status {
+  background: rgba(179,157,219,0.15);
+  color: var(--lofi-purple);
 }
