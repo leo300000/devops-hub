@@ -7,84 +7,91 @@
 
 ---
 
-## La syntaxe HCL en 5 minutes
+## C'est quoi Terraform ?
 
-HCL (HashiCorp Configuration Language) ressemble à du JSON, mais humainement lisible.
+Terraform est un outil d'**Infrastructure as Code (IaC)**. Au lieu de créer des serveurs, réseaux et bases de données à la main via des clics dans une interface, tu les décris dans des fichiers texte, et Terraform les crée automatiquement.
 
+!!! quote "Analogie"
+    Terraform, c'est comme un **plan d'architecte**.
+    Le plan décrit exactement la maison (nb de pièces, dimensions, matériaux). L'entrepreneur (Terraform) construit exactement ce qui est décrit — toujours pareil, sans improvisation.
+
+**Sans Terraform :**
+```
+Clique ici → remplis ce formulaire → attends → configure à la main
+→ recommence sur 10 serveurs → prie pour ne pas avoir fait d'erreur
+→ impossible à reproduire exactement
+```
+
+**Avec Terraform :**
 ```hcl
-# Un bloc resource = une ressource cloud
-resource "type_de_ressource" "nom_local" {
-  parametre = "valeur"
+resource "azurerm_virtual_machine" "web" {
+  count = 10  # 10 VMs identiques en une seule commande
+  # ...
 }
 ```
 
-!!! tip "Règle d'or"
-    `"type_de_ressource"` → ce que tu crées (`azurerm_resource_group`, `azurerm_virtual_network`...)
-    `"nom_local"` → le nom que **toi** tu choisis pour y faire référence dans le code
-
 ---
 
-## Installation
+## C'est quoi un Provider ?
 
-```bash
-# Windows (winget)
-winget install Hashicorp.Terraform
+**C'est quoi ?** Un Provider est le **plugin** qui permet à Terraform de communiquer avec un service cloud. Il y a un provider pour Azure (`azurerm`), AWS (`aws`), GCP (`google`), Kubernetes, GitHub, et des centaines d'autres.
 
-# Mac
-brew install terraform
-
-# Vérifier
-terraform version
-# Terraform v1.7.0
-```
-
----
-
-## Configurer l'accès à Azure
-
-```bash
-# 1. Installer Azure CLI
-winget install Microsoft.AzureCLI
-
-# 2. Se connecter
-az login
-
-# 3. Sélectionner ta subscription
-az account list --output table
-az account set --subscription "Mon-Abonnement"
-
-# 4. Terraform utilisera automatiquement tes credentials Azure CLI
-```
-
----
-
-## Ton premier fichier Terraform avec AzureRM
+!!! quote "Analogie"
+    Le Provider = le **traducteur**.
+    Tu écris en HCL "crée-moi un serveur", le provider Azure traduit ça en appels API Azure.
 
 ```hcl
-# main.tf
-
+# On déclare quels providers on utilise et leur version
 terraform {
-  required_version = ">= 1.5.0"
   required_providers {
     azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.85"
+      source  = "hashicorp/azurerm"  # Où télécharger le provider
+      version = "~> 3.85"            # Version à utiliser (~> = compatible avec 3.85.x)
     }
   }
 }
 
+# On configure le provider
 provider "azurerm" {
-  features {}
-  # Terraform utilise automatiquement az login
-  # En CI/CD, on utilisera des variables d'environnement
+  features {}  # Obligatoire pour azurerm, même vide
+  # Terraform utilise automatiquement tes credentials `az login`
 }
+```
 
-# Resource Group — le "dossier" Azure
+---
+
+## C'est quoi une Resource ?
+
+**C'est quoi ?** Une Resource est l'unité de base de Terraform. Chaque resource représente **un objet dans le cloud** : un serveur, un réseau, une base de données, un bucket de stockage...
+
+```hcl
+resource "TYPE" "NOM_LOCAL" {
+  # Paramètres de la ressource
+}
+```
+
+- `TYPE` → ce que tu crées (`azurerm_resource_group`, `azurerm_virtual_network`...)
+- `NOM_LOCAL` → le nom que **toi** tu choisis pour y faire référence dans le reste du code
+
+!!! tip "Nomenclature"
+    `azurerm_resource_group` → `azurerm` = le provider, `resource_group` = le type d'objet Azure
+    Tu trouves tous les types dans la [doc du provider](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs).
+
+---
+
+## C'est quoi un Resource Group Azure ?
+
+**C'est quoi ?** Un Resource Group est un **dossier logique** dans Azure qui regroupe des ressources liées. C'est obligatoire — toute ressource Azure doit appartenir à un Resource Group.
+
+```hcl
 resource "azurerm_resource_group" "rg" {
-  name     = "rg-mon-premier-projet"
-  location = "France Central"
-
-  tags = {
+  # "rg" = le nom local, on peut l'appeler comme on veut
+  # On y fera référence avec : azurerm_resource_group.rg.name
+  
+  name     = "rg-mon-premier-projet"  # Le nom affiché dans Azure
+  location = "France Central"          # La région Azure où créer le RG
+  
+  tags = {                             # Étiquettes pour organiser et filtrer
     Environment = "dev"
     ManagedBy   = "Terraform"
   }
@@ -93,46 +100,140 @@ resource "azurerm_resource_group" "rg" {
 
 ---
 
-## Les 3 commandes du quotidien
+## Installation
 
 ```bash
-# 1. Initialise le projet (télécharge le provider azurerm)
+# Windows
+winget install Hashicorp.Terraform
+
+# Mac
+brew install terraform
+
+# Vérifier
+terraform version
+```
+
+## Configurer l'accès à Azure
+
+```bash
+# Installer Azure CLI
+winget install Microsoft.AzureCLI
+
+# Se connecter (ouvre le navigateur)
+az login
+
+# Vérifier qu'on est sur la bonne subscription
+az account show
+
+# Terraform utilisera automatiquement ces credentials
+```
+
+---
+
+## Les 3 commandes du quotidien
+
+**`terraform init`** — C'est quoi ? Initialise le projet. Télécharge les providers déclarés dans le code. À faire une seule fois au démarrage, et à refaire si tu changes de provider ou de version.
+
+```bash
 terraform init
+# ✅ Télécharge le provider azurerm
+# ✅ Configure le backend (remote state)
+# ✅ Crée le dossier .terraform/
+```
 
-# Output :
-# Initializing provider plugins...
-# - Installing hashicorp/azurerm v3.85.0...
-# ✅ Terraform initialized successfully!
+---
 
-# 2. Prévisualise les changements
+**`terraform plan`** — C'est quoi ? Compare ton code avec l'état actuel de l'infrastructure et affiche exactement ce qui va changer. **Ne touche à rien** — c'est une prévisualisation.
+
+```bash
 terraform plan
 
 # Output :
 # Terraform will perform the following actions:
-#   + azurerm_resource_group.rg will be created
-#     + name     = "rg-mon-premier-projet"
-#     + location = "francecentral"
+#
+#   # azurerm_resource_group.rg will be created
+#   + resource "azurerm_resource_group" "rg" {
+#       + id       = (known after apply)
+#       + location = "francecentral"
+#       + name     = "rg-mon-premier-projet"
+#     }
+#
 # Plan: 1 to add, 0 to change, 0 to destroy.
-
-# 3. Applique
-terraform apply
-# Tape "yes" pour confirmer
 ```
 
+Les symboles signifient :
+- `+` → sera **créé**
+- `~` → sera **modifié**
+- `-` → sera **détruit**
+- `-/+` → sera **détruit puis recréé**
+
 !!! warning "Toujours faire `plan` avant `apply`"
-    Le plan est comme relire avant d'envoyer un email important. Il montre exactement ce qui va changer **sans toucher à rien**.
+    Le plan, c'est comme relire un email avant d'appuyer sur Envoyer. Repère les `destroy` inattendus !
 
 ---
 
-## Créer un Storage Account
+**`terraform apply`** — C'est quoi ? Applique les changements — crée, modifie ou détruit les ressources dans Azure.
+
+```bash
+terraform apply
+# Terraform affiche le plan, puis demande confirmation :
+# Do you want to perform these actions? (yes/no): yes
+#
+# azurerm_resource_group.rg: Creating...
+# azurerm_resource_group.rg: Creation complete after 3s
+#
+# Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+```
+
+---
+
+## C'est quoi le State (`terraform.tfstate`) ?
+
+**C'est quoi ?** Le state est la **mémoire** de Terraform. Il enregistre ce qu'il a créé dans Azure. Sans state, Terraform ne saurait pas ce qui existe déjà et recréerait tout à chaque `apply`.
+
+```
+ton code HCL
+      ↓
+ terraform apply
+      ↓
+   Azure (création)
+      ↓
+terraform.tfstate  ← "J'ai créé rg-mon-projet avec l'ID /subscriptions/.../rg-mon-projet"
+```
+
+```bash
+# Voir ce que Terraform gère
+terraform state list
+# azurerm_resource_group.rg
+# azurerm_storage_account.storage
+
+# Détails d'une ressource
+terraform state show azurerm_resource_group.rg
+```
+
+!!! danger "3 règles absolues sur le state"
+    1. Ne jamais l'éditer à la main
+    2. Ne jamais le commiter dans Git (contient des données sensibles)
+    3. En équipe, le stocker dans Azure Blob Storage (remote state)
+
+---
+
+## Créer un Storage Account — Exemple complet
 
 ```hcl
+# Un Storage Account = stockage de fichiers dans Azure (équivalent S3 d'AWS)
+
 resource "azurerm_storage_account" "storage" {
-  name                     = "stmonprojetdev001"  # Doit être unique globalement
-  resource_group_name      = azurerm_resource_group.rg.name      # Référence le RG créé au-dessus
-  location                 = azurerm_resource_group.rg.location  # Même région
-  account_tier             = "Standard"
-  account_replication_type = "LRS"  # Locally Redundant Storage
+  # Le nom doit être : unique globalement, 3-24 chars, minuscules et chiffres uniquement
+  name = "stmonprojetdev001"
+
+  # On référence le resource group créé plus haut
+  # Syntaxe : TYPE.NOM_LOCAL.ATTRIBUT
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location  # Même région que le RG
+
+  account_tier             = "Standard"  # Standard ou Premium
+  account_replication_type = "LRS"       # LRS = stockage local (moins cher, pour dev)
 
   tags = {
     Environment = "dev"
@@ -141,23 +242,25 @@ resource "azurerm_storage_account" "storage" {
 ```
 
 !!! info "Référencement entre ressources"
-    `azurerm_resource_group.rg.name` = type + nom_local + attribut
-    Terraform crée les ressources dans le bon ordre automatiquement.
+    `azurerm_resource_group.rg.name` = le nom du resource group créé par Terraform.
+    Terraform comprend la dépendance et crée le RG **avant** le Storage Account, automatiquement.
 
 ---
 
-## Variables — Rendre ton code réutilisable
+## Variables — Paramétrer ton code
+
+**C'est quoi ?** Les variables permettent de rendre ton code réutilisable. Au lieu de mettre `"dev"` en dur partout, tu mets `var.environment` et tu changes la valeur une seule fois.
 
 ```hcl
-# variables.tf
+# variables.tf — Déclare les variables disponibles
 variable "environment" {
-  description = "Nom de l'environnement (dev, staging, prod)"
+  description = "Nom de l'environnement"
   type        = string
   default     = "dev"
 
   validation {
     condition     = contains(["dev", "staging", "prod"], var.environment)
-    error_message = "L'environnement doit être dev, staging ou prod."
+    error_message = "Doit être dev, staging ou prod."
   }
 }
 
@@ -168,13 +271,14 @@ variable "location" {
 }
 
 variable "project_name" {
-  description = "Nom court du projet (utilisé dans le nommage)"
+  description = "Nom court du projet"
   type        = string
+  # Pas de default → Terraform le demandera interactivement
 }
 ```
 
 ```hcl
-# main.tf — utiliser les variables
+# main.tf — Utilise les variables avec var.NOM
 resource "azurerm_resource_group" "rg" {
   name     = "rg-${var.project_name}-${var.environment}"
   location = var.location
@@ -182,14 +286,13 @@ resource "azurerm_resource_group" "rg" {
 ```
 
 ```hcl
-# terraform.tfvars — valeurs des variables
+# terraform.tfvars — Donne les valeurs (ne pas commiter si contient des secrets)
 project_name = "monapp"
 environment  = "dev"
-location     = "France Central"
 ```
 
 ```bash
-# Passer une variable en CLI
+# Passer une variable en CLI (priorité la plus haute)
 terraform apply -var="environment=prod"
 
 # Utiliser un fichier de variables différent
@@ -198,79 +301,60 @@ terraform apply -var-file="prod.tfvars"
 
 ---
 
-## Outputs — Récupérer des infos après création
+## Outputs — Récupérer des informations
+
+**C'est quoi ?** Les outputs affichent des valeurs après un `apply`. Utile pour récupérer des IDs, IPs, URLs générés par Azure.
 
 ```hcl
 # outputs.tf
 output "resource_group_name" {
-  description = "Nom du resource group créé"
+  description = "Nom du resource group"
   value       = azurerm_resource_group.rg.name
 }
 
-output "storage_account_connection_string" {
-  description = "Chaîne de connexion du storage account"
+output "storage_connection_string" {
+  description = "Chaîne de connexion du Storage Account"
   value       = azurerm_storage_account.storage.primary_connection_string
-  sensitive   = true  # N'apparaît pas dans les logs
+  sensitive   = true  # Masqué dans les logs, affiché seulement si demandé explicitement
 }
 ```
 
 ```bash
-# Voir les outputs après apply
-terraform output
-terraform output resource_group_name
-
-# Récupérer un output sensitif
-terraform output -raw storage_account_connection_string
+terraform output                                    # Affiche tous les outputs
+terraform output resource_group_name               # Un output spécifique
+terraform output -raw storage_connection_string    # Sans les guillemets (pour des scripts)
 ```
 
 ---
 
-## Le fichier state (`terraform.tfstate`)
-
-```
-ton code HCL → terraform apply → Azure
-                      ↓
-               terraform.tfstate   ← mémoire de ce qui a été créé
-```
-
-| Fichier | Rôle | Committer ? |
-|---------|------|-------------|
-| `terraform.tfstate` | État actuel | ❌ Non (contient des secrets) |
-| `terraform.tfstate.backup` | Sauvegarde | ❌ Non |
-| `.terraform/` | Cache providers | ❌ Non |
-| `*.tfvars` | Variables | ⚠️ Seulement si pas de secrets |
-
-**→ Ajoute `.terraform/`, `*.tfstate*` à ton `.gitignore` !**
-
----
-
-## Détruire l'infrastructure
+## Supprimer l'infrastructure
 
 ```bash
+# Détruire TOUT ce que Terraform gère
 terraform destroy
-# Montre ce qui va être supprimé
-# Tape "yes" pour confirmer
+# Demande confirmation : yes
 
-# Ou détruire une ressource spécifique
+# Détruire une seule ressource
 terraform destroy -target=azurerm_storage_account.storage
 ```
 
-!!! danger "Ne jamais `destroy` en prod sans backup"
-    `destroy` supprime tout. En production, il faut des backups et une procédure validée.
+!!! danger "`terraform destroy` en production = catastrophe si mal utilisé"
+    Toujours vérifier `terraform plan -destroy` avant. En prod, utilise `lifecycle { prevent_destroy = true }` sur les ressources critiques.
 
 ---
 
-## Récap — Les fichiers d'un projet Terraform
+## Récap — Structure d'un projet Terraform
 
 ```
 mon-projet/
 ├── main.tf           # Ressources principales
-├── variables.tf      # Déclaration des variables
-├── outputs.tf        # Valeurs à afficher après apply
+├── variables.tf      # Déclarations des variables
+├── outputs.tf        # Valeurs affichées après apply
 ├── providers.tf      # Configuration des providers
-├── terraform.tfvars  # Valeurs des variables (ne pas commiter si secrets)
-└── .gitignore        # Exclure .terraform/, *.tfstate*
+├── terraform.tfvars  # Valeurs des variables (⚠️ ne pas commiter si secrets)
+└── .gitignore        # Doit contenir : .terraform/, *.tfstate, *.tfstate.backup
 ```
 
 !!! success "Checkpoint débutant ✅"
-    Tu sais : configurer Azure, init/plan/apply/destroy, créer un RG et un Storage Account, utiliser variables et outputs.
+    Tu comprends : Provider, Resource, State, Variables, Outputs.
+    Tu sais : init/plan/apply/destroy, créer un RG et un Storage Account.

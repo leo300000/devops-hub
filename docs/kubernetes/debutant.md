@@ -4,207 +4,189 @@
     - [Kubernetes Docs](https://kubernetes.io/docs/home/)
     - [kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
     - [Kubernetes Playground](https://killercoda.com/playgrounds/scenario/kubernetes)
-    - [AKS Quickstart](https://learn.microsoft.com/azure/aks/learn/quick-kubernetes-deploy-cli)
 
 ---
 
-## Installer kubectl
+## C'est quoi Kubernetes ?
 
-```bash
-# Windows (winget)
-winget install Kubernetes.kubectl
+Kubernetes (K8s) est un **orchestrateur de containers**. Il gère automatiquement le démarrage, l'arrêt, la mise à l'échelle et la récupération de tes containers Docker.
 
-# Mac
-brew install kubectl
+!!! quote "Analogie"
+    Docker = un musicien qui joue seul.
+    Kubernetes = le chef d'orchestre qui coordonne 100 musiciens, s'assure que chacun joue au bon moment, et remplace instantanément un musicien qui s'évanouit.
 
-# Linux
-curl -LO "https://dl.k8s.io/release/$(curl -sL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+**Sans Kubernetes :**
+```
+Container plante → app down → quelqu'un le redémarre manuellement à 3h du matin 😴
+Trop de trafic  → app lente → quelqu'un ajoute des serveurs à la main
+Mise à jour     → downtime  → les utilisateurs voient une erreur
+```
 
-# Vérifier
-kubectl version --client
+**Avec Kubernetes :**
+```
+Container plante → K8s le redémarre en 2 secondes, personne ne s'en rend compte ✅
+Trop de trafic  → K8s crée automatiquement plus d'instances ✅
+Mise à jour     → K8s remplace les containers un par un, zéro downtime ✅
 ```
 
 ---
 
-## Les concepts de base
+## Les objets Kubernetes — Vue d'ensemble
 
-| Objet | Analogie | Rôle |
-|-------|----------|------|
-| **Node** | Un serveur | Machine physique ou VM dans le cluster |
-| **Pod** | Un container (ou groupe) | Plus petite unité deployable |
-| **Deployment** | Recette de pods | Gère les replicas et les updates |
-| **Service** | Adresse permanente | Expose les pods (load balancer interne) |
-| **Namespace** | Dossier d'isolation | Sépare les environnements/équipes |
-| **ConfigMap** | Fichier de config | Variables de config non-sensibles |
-| **Secret** | Coffre-fort | Mots de passe, tokens, certificats |
+Avant de rentrer dans le code, comprends ces 6 objets. Tout le reste en découle.
 
----
+### Pod — La plus petite unité
 
-## Les commandes essentielles
+**C'est quoi ?** Un Pod est un groupe d'un ou plusieurs containers qui partagent le même réseau et stockage. C'est l'unité de base de Kubernetes — tout tourne dans des pods.
 
-```bash
-# === VOIR les ressources ===
-kubectl get pods                        # Pods dans le namespace courant
-kubectl get pods -n kube-system         # Dans le namespace kube-system
-kubectl get pods --all-namespaces       # Partout
-kubectl get pods -o wide                # Avec plus d'infos (IP, node...)
-kubectl get all                         # Tout voir d'un coup
+!!! quote "Analogie"
+    Un Pod = un appartement. Les containers sont les colocataires qui partagent l'adresse (IP) et les pièces communes (volumes).
 
-kubectl get deployments
-kubectl get services
-kubectl get nodes
-
-# === INSPECTER ===
-kubectl describe pod mon-pod            # Détails complets + events
-kubectl describe node nom-du-node
-kubectl logs mon-pod                    # Logs en temps réel
-kubectl logs mon-pod --previous         # Logs du container précédent (après crash)
-kubectl logs mon-pod -f                 # Follow (comme tail -f)
-kubectl logs mon-pod -c mon-container   # Si plusieurs containers dans le pod
-
-# === INTERAGIR ===
-kubectl exec -it mon-pod -- bash        # Shell interactif
-kubectl exec mon-pod -- env             # Exécuter une commande
-kubectl port-forward pod/mon-pod 8080:80  # Accéder en local sans service
-
-# === APPLIQUER ===
-kubectl apply -f deployment.yaml       # Créer ou mettre à jour
-kubectl delete -f deployment.yaml      # Supprimer
-kubectl delete pod mon-pod             # Supprimer un pod (sera recréé par le deployment)
+```
+Pod
+├── Container principal (ton app)
+└── Container sidecar (logs, proxy... optionnel)
 ```
 
+!!! warning "On ne crée jamais un Pod directement"
+    En pratique, on ne crée pas des Pods à la main. On crée des **Deployments** qui gèrent les Pods automatiquement.
+
 ---
 
-## Ton premier Deployment
+### Deployment — Le gestionnaire de Pods
+
+**C'est quoi ?** Un Deployment est un objet qui dit à Kubernetes : *"Je veux X copies de ce container, maintiens-les en vie, et gère les mises à jour proprement."*
+
+Il répond à 3 questions :
+- **Quoi lancer ?** → quelle image Docker
+- **Combien ?** → nombre de replicas
+- **Comment mettre à jour ?** → stratégie de rolling update
+
+!!! quote "Analogie"
+    Un Deployment = un **contrat de travail** passé avec Kubernetes.
+    Tu lui dis "je veux 3 serveurs Nginx en permanence". Si l'un tombe, Kubernetes en recrée un immédiatement pour respecter le contrat.
 
 ```yaml
 # deployment.yaml
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1       # La version de l'API K8s pour cet objet
+kind: Deployment          # Le type d'objet qu'on crée
+
 metadata:
-  name: mon-app
-  namespace: default
+  name: mon-app           # Le nom du Deployment dans K8s
+  namespace: default      # Le "dossier" d'isolation (voir Namespace plus bas)
   labels:
-    app: mon-app
-spec:
-  replicas: 3                        # 3 instances en parallèle
-  selector:
+    app: mon-app          # Étiquettes pour identifier/filtrer cet objet
+
+spec:                     # La description de ce qu'on veut
+  replicas: 3             # Je veux 3 copies (pods) de mon app en permanence
+  
+  selector:               # Comment le Deployment sait quels Pods il gère
     matchLabels:
-      app: mon-app                   # Connecte le deployment aux pods via ce label
-  template:
+      app: mon-app        # Il gère tous les pods qui ont ce label
+
+  template:               # Le modèle pour créer les Pods
     metadata:
       labels:
-        app: mon-app
-    spec:
+        app: mon-app      # Ce label DOIT correspondre au selector ci-dessus
+    
+    spec:                 # Description du Pod et de ses containers
       containers:
-      - name: mon-app
-        image: nginx:1.25
+      - name: mon-app     # Nom du container dans le pod
+        image: nginx:1.25 # L'image Docker à utiliser (TOUJOURS préciser la version !)
         ports:
-        - containerPort: 80
+        - containerPort: 80  # Le port sur lequel le container écoute
 
-        # Ressources — TOUJOURS les définir
+        # Ressources — TOUJOURS les définir, sinon K8s ne peut pas scheduler
         resources:
-          requests:                  # Minimum garanti
+          requests:       # Minimum garanti — K8s choisit un node avec au moins ça
             memory: "64Mi"
-            cpu: "100m"             # 100m = 0.1 CPU
-          limits:                   # Maximum autorisé
+            cpu: "100m"   # 100 millicores = 0.1 CPU (1000m = 1 CPU entier)
+          limits:         # Maximum autorisé — K8s tue le container si dépassé
             memory: "256Mi"
             cpu: "500m"
 
-        # Variables d'environnement
+        # Variables d'environnement injectées dans le container
         env:
         - name: APP_ENV
           value: "production"
         - name: DB_HOST
           valueFrom:
-            configMapKeyRef:
-              name: app-config
-              key: database_host
+            configMapKeyRef:    # Récupère la valeur depuis un ConfigMap
+              name: app-config  # Nom du ConfigMap
+              key: database_host # Clé dans le ConfigMap
 ```
 
 ```bash
+# Appliquer le fichier — K8s crée ou met à jour le Deployment
 kubectl apply -f deployment.yaml
-kubectl get pods      # 3 pods en cours de démarrage
-# mon-app-5d9f7f5c4-abc12   1/1   Running   0   30s
-# mon-app-5d9f7f5c4-def34   1/1   Running   0   30s
-# mon-app-5d9f7f5c4-ghi56   1/1   Running   0   30s
+
+# Vérifier que les 3 pods sont bien créés et Running
+kubectl get pods
+# NAME                       READY   STATUS    RESTARTS   AGE
+# mon-app-5d9f7f5c4-abc12   1/1     Running   0          30s
+# mon-app-5d9f7f5c4-def34   1/1     Running   0          30s
+# mon-app-5d9f7f5c4-ghi56   1/1     Running   0          30s
+
+# Voir le Deployment
+kubectl get deployments
+# NAME      READY   UP-TO-DATE   AVAILABLE   AGE
+# mon-app   3/3     3            3           1m
 ```
 
 ---
 
-## Service — Exposer ton app
+### Service — L'adresse stable de tes Pods
+
+**C'est quoi ?** Les Pods sont éphémères — ils peuvent être créés, supprimés, déplacés sur d'autres nodes. Leur IP change à chaque fois. Un **Service** fournit une adresse stable (IP + DNS) qui pointe toujours vers les bons pods, peu importe leurs IPs internes.
+
+!!! quote "Analogie"
+    Les Pods = des employés qui changent de bureau régulièrement.
+    Le Service = le numéro de téléphone du service client qui redirige toujours vers un employé disponible, peu importe lequel.
 
 ```yaml
 # service.yaml
 apiVersion: v1
 kind: Service
+
 metadata:
-  name: mon-app-service
+  name: mon-app-service     # Le DNS interne sera : mon-app-service.default.svc.cluster.local
+
 spec:
   selector:
-    app: mon-app               # Sélectionne les pods avec ce label
+    app: mon-app            # Envoie le trafic vers tous les pods avec ce label
+                            # (correspond aux labels du Deployment)
   ports:
   - name: http
-    port: 80                   # Port du service
-    targetPort: 80             # Port du container
-  type: ClusterIP              # Interne au cluster seulement
+    port: 80                # Le port du Service (ce que les autres apps appellent)
+    targetPort: 80          # Le port du container (où le trafic est redirigé)
+  
+  type: ClusterIP           # Voir tableau ci-dessous
 ```
 
-```yaml
-# Pour exposer sur internet (Azure crée un Load Balancer)
-type: LoadBalancer
-```
+### Les types de Service expliqués
+
+| Type | C'est quoi | Usage |
+|------|-----------|-------|
+| `ClusterIP` | IP interne au cluster, invisible de l'extérieur | Communication entre microservices |
+| `NodePort` | Expose un port sur chaque node (30000-32767) | Tests rapides |
+| `LoadBalancer` | Azure crée un vrai load balancer avec IP publique | Production, accès internet |
 
 ```bash
 kubectl apply -f service.yaml
 kubectl get services
-# mon-app-service   ClusterIP   10.0.0.100   <none>   80/TCP   1m
-
-# Tester sans quitter le cluster
-kubectl run test --image=curlimages/curl --rm -it -- curl http://mon-app-service
+# NAME              TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+# mon-app-service   ClusterIP   10.0.0.100    <none>        80/TCP    1m
 ```
-
-### Les types de Service
-
-| Type | Accès depuis | Usage |
-|------|-------------|-------|
-| `ClusterIP` | Intérieur cluster seulement | Communication entre microservices |
-| `NodePort` | IP du node + port (30000-32767) | Dev/test |
-| `LoadBalancer` | IP publique (Azure crée un LB) | Production |
-| `ExternalName` | DNS externe | Pointer vers une ressource externe |
 
 ---
 
-## Mettre à jour une app — Rolling Update
+### Namespace — Le dossier d'isolation
 
-```bash
-# Changer l'image (déclenche un rolling update automatique)
-kubectl set image deployment/mon-app mon-app=nginx:1.26
+**C'est quoi ?** Un Namespace est un espace de noms virtuel dans le cluster. Il permet d'isoler des ressources — comme des dossiers dans un système de fichiers. On s'en sert pour séparer les environnements ou les équipes sur un même cluster.
 
-# Voir la progression
-kubectl rollout status deployment/mon-app
-# Waiting for deployment "mon-app" rollout to finish: 1 out of 3 new replicas have been updated...
-# Waiting for deployment "mon-app" rollout to finish: 2 out of 3...
-# deployment "mon-app" successfully rolled out
-
-# Voir l'historique
-kubectl rollout history deployment/mon-app
-
-# Annuler si problème
-kubectl rollout undo deployment/mon-app
-
-# Revenir à une version spécifique
-kubectl rollout undo deployment/mon-app --to-revision=2
-```
-
-!!! tip "Rolling Update — Comment ça marche"
-    K8s crée les nouveaux pods **avant** de supprimer les anciens → zéro downtime.
-    Si les nouveaux pods ne démarrent pas correctement, le déploiement se bloque et l'ancienne version continue de tourner.
-
----
-
-## Namespaces — Isoler les environnements
+!!! quote "Analogie"
+    Un Namespace = un **appartement dans un immeuble**.
+    Chaque appartement (namespace) a ses propres meubles (pods, services...). Les voisins ne se dérangent pas mutuellement.
 
 ```bash
 # Créer des namespaces
@@ -212,9 +194,12 @@ kubectl create namespace dev
 kubectl create namespace staging
 kubectl create namespace prod
 
-# Travailler dans un namespace spécifique
+# Déployer dans un namespace spécifique
 kubectl apply -f deployment.yaml -n dev
+
+# Voir les ressources d'un namespace
 kubectl get pods -n dev
+kubectl get all -n dev
 
 # Changer le namespace par défaut (évite de taper -n à chaque fois)
 kubectl config set-context --current --namespace=dev
@@ -222,40 +207,125 @@ kubectl config set-context --current --namespace=dev
 
 ---
 
-## ConfigMap — Variables de configuration
+### ConfigMap — La configuration sans secrets
+
+**C'est quoi ?** Un ConfigMap stocke des données de configuration sous forme de clés/valeurs. Il permet de **séparer la configuration du code** — tu changes la config sans rebuilder l'image Docker.
+
+!!! quote "Analogie"
+    Un ConfigMap = un **fichier `.env`** mais géré par Kubernetes, injectable dans les containers.
 
 ```yaml
 # configmap.yaml
 apiVersion: v1
 kind: ConfigMap
+
 metadata:
   name: app-config
+
 data:
-  database_host: "postgres-service"
+  database_host: "postgres-service"   # Clé: Valeur
   database_port: "5432"
   app_env: "production"
-  config.json: |            # Fichier entier en ConfigMap
+  max_connections: "100"
+  
+  # On peut même stocker un fichier entier
+  config.json: |
     {
-      "maxConnections": 100,
+      "maxRetries": 3,
       "timeout": 30
     }
 ```
 
-```yaml
-# Utiliser dans le Deployment
-envFrom:
-- configMapRef:
-    name: app-config          # Injecte TOUTES les clés comme variables d'env
+---
 
-# Ou fichier monté comme volume
-volumes:
-- name: config-volume
-  configMap:
-    name: app-config
-volumeMounts:
-- name: config-volume
-  mountPath: /etc/config
+### Secret — La configuration sensible
+
+**C'est quoi ?** Un Secret est comme un ConfigMap, mais pour les données **sensibles** (mots de passe, tokens, certificats). K8s les stocke encodés en base64 et les protège mieux que les ConfigMaps.
+
+!!! warning "Base64 ≠ chiffrement"
+    Base64 est un encodage, pas un chiffrement. N'importe qui avec accès au cluster peut décoder les secrets. En production, utilise Azure Key Vault avec le CSI Driver.
+
+```yaml
+# secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secrets
+type: Opaque
+stringData:                         # stringData = K8s encode automatiquement en base64
+  database_password: "MonMotDePasse"
+  api_key: "sk-abc123xyz"
+```
+
+```yaml
+# Utiliser Secret dans un Deployment
+containers:
+- name: mon-app
+  envFrom:
+  - configMapRef:
+      name: app-config        # Injecte toutes les clés du ConfigMap comme variables d'env
+  - secretRef:
+      name: app-secrets       # Injecte toutes les clés du Secret comme variables d'env
+```
+
+---
+
+## Les commandes essentielles
+
+```bash
+# Voir les ressources
+kubectl get pods                        # Pods du namespace courant
+kubectl get pods -o wide                # Avec IP et node
+kubectl get all                         # Tout (pods, services, deployments...)
+kubectl get pods --watch                # Surveiller en temps réel
+
+# Inspecter
+kubectl describe pod mon-pod            # Détails + events (utile pour débugger)
+kubectl describe deployment mon-app     # Détails du deployment
+kubectl logs mon-pod                    # Logs du container
+kubectl logs mon-pod -f                 # Logs en temps réel (comme tail -f)
+kubectl logs mon-pod --previous         # Logs avant le dernier crash
+
+# Interagir
+kubectl exec -it mon-pod -- bash        # Shell interactif dans le container
+kubectl exec mon-pod -- env             # Voir les variables d'environnement
+kubectl port-forward pod/mon-pod 8080:80  # Accès local temporaire sans Service
+
+# Créer/modifier/supprimer
+kubectl apply -f fichier.yaml           # Créer ou mettre à jour
+kubectl delete -f fichier.yaml          # Supprimer via le fichier
+kubectl delete pod mon-pod              # Supprimer directement (le Deployment le recrée !)
+```
+
+---
+
+## Mettre à jour une app — Rolling Update
+
+**C'est quoi ?** Un Rolling Update remplace les vieux pods par les nouveaux **un par un** (ou par groupes). À aucun moment tous les pods ne sont down — zéro downtime.
+
+```
+Avant :  [v1] [v1] [v1]
+Step 1 : [v2] [v1] [v1]    ← un nouveau pod créé, un ancien supprimé
+Step 2 : [v2] [v2] [v1]
+Après :  [v2] [v2] [v2]    ← mise à jour terminée
+```
+
+```bash
+# Changer l'image = déclenche un rolling update
+kubectl set image deployment/mon-app mon-app=nginx:1.26
+
+# Voir la progression
+kubectl rollout status deployment/mon-app
+# Waiting for deployment "mon-app" rollout to finish: 1 out of 3 new replicas updated...
+# deployment "mon-app" successfully rolled out
+
+# Voir l'historique des déploiements
+kubectl rollout history deployment/mon-app
+
+# Annuler si ça se passe mal (revient à la version précédente)
+kubectl rollout undo deployment/mon-app
 ```
 
 !!! success "Checkpoint débutant ✅"
-    Tu sais : déployer une app, l'exposer, la mettre à jour, utiliser namespaces et ConfigMaps.
+    Tu comprends : Pod, Deployment, Service, Namespace, ConfigMap, Secret.
+    Tu sais : déployer une app, l'exposer, la mettre à jour et annuler un déploiement.

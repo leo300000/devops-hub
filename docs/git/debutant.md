@@ -1,53 +1,91 @@
 # 🟢 Git — Débutant
 
 !!! info "Documentation officielle"
-    - [Git Book (fr)](https://git-scm.com/book/fr/v2) — La référence complète
-    - [Git Reference](https://git-scm.com/docs)
-    - [Learn Git Branching](https://learngitbranching.js.org/?locale=fr_FR) — Exercices interactifs visuels
+    - [Git Book (fr)](https://git-scm.com/book/fr/v2)
+    - [Learn Git Branching](https://learngitbranching.js.org/?locale=fr_FR) — Exercices visuels interactifs
     - [Oh Shit, Git!](https://ohshitgit.com/fr) — Sortir des situations difficiles
+    - [Conventional Commits](https://www.conventionalcommits.org/fr/)
+
+---
+
+## C'est quoi Git ?
+
+Git est un **système de contrôle de version** (VCS). Il enregistre l'historique de chaque modification de ton code, qui l'a faite, quand, et pourquoi.
+
+!!! quote "Analogie"
+    Git, c'est la **machine à remonter le temps** de ton code.
+    À chaque "sauvegarde" (commit), Git prend un snapshot complet. Tu peux revenir à n'importe quel moment dans le passé, comparer deux versions, ou travailler sur plusieurs idées en parallèle sans les mélanger.
+
+**Sans Git :**
+```
+projet_final.zip
+projet_final_v2.zip
+projet_final_v2_VRAI.zip
+projet_final_v2_VRAI_cette_fois.zip
+projet_final_v2_VRAI_cette_fois_2.zip   😱
+```
+
+**Avec Git :**
+```bash
+git log --oneline
+# a1b2c3d Ajoute la fonctionnalité de connexion
+# e4f5g6h Corrige le bug du panier
+# i7j8k9l Version initiale
+```
+
+---
+
+## Les 4 zones de Git — Comment ça marche
+
+Comprendre ces 4 zones est essentiel. Beaucoup de commandes Git déplacent des fichiers d'une zone à l'autre.
+
+```
+┌─────────────────┐   git add    ┌──────────────┐   git commit  ┌──────────────┐   git push   ┌──────────────┐
+│ Working         │ ──────────→  │ Staging Area │ ───────────→  │ Local Repo   │ ──────────→  │ Remote Repo  │
+│ Directory       │              │ (Index)      │               │ (.git/)      │              │ (GitHub)     │
+│                 │ ←──────────  │              │ ←───────────  │              │ ←──────────  │              │
+│ Tes fichiers    │  git restore │              │  git reset    │ Tous les     │  git pull    │ Code partagé │
+│ en cours        │              │ Fichiers     │               │ commits      │              │ avec l'équipe│
+│ d'édition       │              │ prêts à être │               │              │              │              │
+└─────────────────┘              │ commités     │               └──────────────┘              └──────────────┘
+                                 └──────────────┘
+```
+
+### Working Directory — C'est quoi ?
+
+C'est tout simplement **ton dossier de travail** — les fichiers que tu vois et édites. Git surveille les changements mais n'enregistre rien automatiquement.
+
+### Staging Area (Index) — C'est quoi ?
+
+La Staging Area est une **zone de préparation** entre tes modifications et le commit. Tu choisis exactement quels changements inclure dans le prochain commit — tu n'es pas obligé de tout commiter d'un coup.
+
+!!! quote "Analogie"
+    La Staging Area = ton **caddie de supermarché**.
+    Tu fais tes courses (modifies des fichiers), tu mets certains articles dans le caddie (`git add`), et tu passes en caisse (`git commit`) seulement ce qui est dans le caddie.
+
+### Local Repository — C'est quoi ?
+
+Le dossier `.git/` à la racine de ton projet. Il contient **tout l'historique** — chaque commit, chaque branche, chaque tag. C'est la "base de données" de Git sur ta machine.
+
+### Remote Repository — C'est quoi ?
+
+Le repo **en ligne** (sur GitHub, GitLab...). Il permet de partager le code avec l'équipe et de sauvegarder hors de ta machine.
 
 ---
 
 ## Installation et configuration
 
 ```bash
-# Windows
-winget install Git.Git
+# Installation
+winget install Git.Git   # Windows
+brew install git         # Mac
+sudo apt install git     # Ubuntu
 
-# Mac
-brew install git
-
-# Ubuntu
-sudo apt install git
-
-# Configuration initiale (obligatoire)
+# Configuration obligatoire (une seule fois)
 git config --global user.name "Leo"
 git config --global user.email "leo@example.com"
 git config --global init.defaultBranch main
-git config --global core.editor "code --wait"  # VS Code comme éditeur
-
-# Voir sa config
-git config --list
-```
-
----
-
-## Les concepts clés
-
-| Concept | Analogie | Explication |
-|---------|----------|-------------|
-| **Repository** | Dossier du projet | Contient tout le code + l'historique |
-| **Working Directory** | Ta table de travail | Fichiers que tu édites |
-| **Staging Area** | La corbeille de courrier | Fichiers prêts à être commités |
-| **Commit** | Sauvegarde | Snapshot du code à un instant T |
-| **Branch** | Brouillon parallèle | Copie pour expérimenter sans risque |
-| **Remote** | Serveur (GitHub) | Où le code est partagé/sauvegardé |
-
-### Le cycle de vie d'un fichier
-
-```
-Untracked → Staged → Committed → Pushed
-   (nouveau)   (git add)  (git commit)  (git push)
+git config --global core.editor "code --wait"   # VS Code comme éditeur Git
 ```
 
 ---
@@ -57,117 +95,139 @@ Untracked → Staged → Committed → Pushed
 === "Nouveau projet"
     ```bash
     mkdir mon-projet && cd mon-projet
-    git init                       # Crée un repo Git local
-    # Crée un dossier .git/ invisible qui contient tout l'historique
+    git init
+    # Crée le dossier .git/ invisible
+    # → ton dossier est maintenant un repo Git
     ```
 
 === "Cloner un projet existant"
     ```bash
+    # Récupère le repo + tout l'historique
     git clone https://github.com/user/repo.git
     cd repo
-    # ou dans un dossier spécifique
-    git clone https://github.com/user/repo.git mon-dossier
     ```
 
 ---
 
 ## Les commandes du quotidien
 
+### `git status` — Voir l'état actuel
+
 ```bash
-# === VOIR l'état ===
-git status                   # Fichiers modifiés, stagés, non-suivis
-git status -s                # Version courte
-# ?? fichier.txt             → non-suivi
-# M  fichier.txt             → modifié et stagé
-#  M fichier.txt             → modifié non-stagé
+git status
 
-git diff                     # Changements non-stagés
-git diff --staged            # Changements stagés (ce qui va être commité)
-git log                      # Historique complet
-git log --oneline            # Une ligne par commit
-git log --oneline --graph --all  # Visualisation des branches
-git log -p                   # Historique avec les diffs
+# ?? fichier.txt      → Nouveau fichier, non-suivi par Git
+# M  fichier.txt      → Modifié et dans la Staging Area (prêt à committer)
+#  M fichier.txt      → Modifié mais pas encore dans la Staging Area
+# D  fichier.txt      → Supprimé
 
-# === STAGE des fichiers ===
-git add fichier.txt          # Un fichier
-git add src/                 # Un dossier entier
-git add *.js                 # Par pattern
+git status -s   # Version courte
+```
+
+### `git add` — Ajouter à la Staging Area
+
+```bash
+git add fichier.txt          # Un fichier spécifique
+git add src/                 # Tout un dossier
+git add *.js                 # Tous les fichiers .js
 git add .                    # Tout (attention aux fichiers sensibles !)
-git add -p                   # Interactif — choisir les parties à stager
-
-# === COMMITTER ===
-git commit -m "Ajoute la page de connexion"
-git commit                   # Ouvre l'éditeur pour écrire un message long
-git commit -am "Fix bug"     # add + commit pour les fichiers déjà suivis
-git commit --amend           # Modifier le dernier commit (message ou contenu)
+git add -p                   # Mode interactif — choisir partie par partie ce qu'on stage
 ```
 
----
-
-## Écrire de bons messages de commit
-
-Suit la convention [Conventional Commits](https://www.conventionalcommits.org/fr/) :
-
-```
-type(scope): description courte
-
-Corps optionnel — explication du POURQUOI
-
-Closes #42
-```
-
-**Types :**
-
-| Type | Usage |
-|------|-------|
-| `feat` | Nouvelle fonctionnalité |
-| `fix` | Correction de bug |
-| `docs` | Documentation uniquement |
-| `style` | Formatage, pas de changement de logique |
-| `refactor` | Refactoring sans new feature ni bug fix |
-| `test` | Ajout ou modification de tests |
-| `chore` | Maintenance, dépendances |
-| `ci` | Configuration CI/CD |
+### `git commit` — Sauvegarder un snapshot
 
 ```bash
-# ✅ Bons exemples
-git commit -m "feat(auth): ajoute la connexion via Google OAuth"
-git commit -m "fix(api): corrige le crash sur la route /users quand id invalide"
-git commit -m "docs: met à jour le README avec les instructions d'installation"
+git commit -m "feat: ajoute la page de connexion"
+git commit                   # Ouvre l'éditeur pour un message long
+git commit -am "fix: corrige le crash"  # add + commit (fichiers déjà suivis seulement)
+```
 
-# ❌ Mauvais exemples
-git commit -m "fix"
-git commit -m "wip"
-git commit -m "modifs du 3 avril"
+### `git diff` — Voir les changements
+
+```bash
+git diff                     # Changements dans le Working Directory (non-stagés)
+git diff --staged            # Changements dans la Staging Area (qui vont être commités)
+git diff main..ma-branche    # Différence entre deux branches
 ```
 
 ---
 
-## Branches — Travailler en parallèle
+## C'est quoi un Commit ?
+
+Un Commit est un **snapshot (photo) de l'état de ton code** à un instant T. Chaque commit a :
+- Un **hash** unique (ex: `a1b2c3d`) qui l'identifie
+- Un **message** qui explique pourquoi ce changement a été fait
+- Un **auteur** et une **date**
+- Un **parent** (le commit précédent)
+
+!!! tip "Écrire de bons messages de commit — Conventional Commits"
+    La convention [Conventional Commits](https://www.conventionalcommits.org/fr/) structure les messages :
+    
+    ```
+    type(scope): description courte
+    
+    Corps optionnel (le POURQUOI, pas le QUOI)
+    
+    Closes #42
+    ```
+    
+    | Type | Usage |
+    |------|-------|
+    | `feat` | Nouvelle fonctionnalité |
+    | `fix` | Correction de bug |
+    | `docs` | Documentation |
+    | `refactor` | Refactoring sans changement fonctionnel |
+    | `test` | Ajout/modification de tests |
+    | `ci` | CI/CD |
+    | `chore` | Maintenance |
+
+    ```bash
+    # ✅ Bons
+    git commit -m "feat(auth): ajoute la connexion Google OAuth"
+    git commit -m "fix(api): corrige le crash quand userId est null"
+    git commit -m "docs: ajoute les instructions d'installation Docker"
+    
+    # ❌ Mauvais
+    git commit -m "fix"
+    git commit -m "wip"
+    git commit -m "modifications du 3 avril"
+    ```
+
+---
+
+## C'est quoi une Branche ?
+
+Une branche est une **ligne de développement parallèle** et indépendante. Tu peux créer une branche pour développer une feature sans impacter le code principal. Si ça ne marche pas, tu supprimes la branche — le code principal est intact.
+
+!!! quote "Analogie"
+    La branche principale (`main`) = la **route nationale**.
+    Créer une branche = prendre une **bretelle** pour faire un détour. Tu reviens sur la route nationale quand tu as fini (merge).
+
+```
+main :     A → B → C → F (merge)
+                    ↘
+feature :           D → E
+```
 
 ```bash
 # Voir les branches
-git branch                   # Locales
-git branch -a                # Locales + distantes
+git branch                          # Branches locales (* = branche actuelle)
+git branch -a                       # Locales + distantes
 
-# Créer et basculer (méthode moderne)
+# Créer et basculer sur une nouvelle branche
 git switch -c feature/connexion-google
-# (ancienne méthode)
+# Ancienne syntaxe (toujours valide) :
 git checkout -b feature/connexion-google
 
 # Basculer sur une branche existante
 git switch main
-git switch develop
-
-# Renommer une branche
-git branch -m ancien-nom nouveau-nom
 
 # Supprimer une branche
 git branch -d feature/connexion-google   # Seulement si mergée
-git branch -D feature/connexion-google   # Forcer la suppression
+git branch -D feature/connexion-google   # Forcer (attention !)
 ```
 
-### Convention de nommage
+### Convention de nommage des branches
 
 ```
 main              → code en production
@@ -175,70 +235,82 @@ develop           → intégration des features
 feature/xxx       → nouvelle fonctionnalité
 fix/xxx           → correction de bug
 hotfix/xxx        → correction urgente en prod
-release/x.y.z     → préparation d'une release
+release/1.2.0     → préparation d'une release
 ```
 
 ---
 
 ## Synchroniser avec GitHub
 
+### `git remote` — C'est quoi ?
+
+Un remote est l'**adresse du repo en ligne**. Par convention, le remote principal s'appelle `origin`.
+
+```bash
+# Voir les remotes configurés
+git remote -v
+# origin  https://github.com/user/repo.git (fetch)
+# origin  https://github.com/user/repo.git (push)
+
+# Ajouter un remote
+git remote add origin https://github.com/user/repo.git
+```
+
 ```bash
 # Envoyer ses commits sur GitHub
 git push origin ma-branche
 
-# Premier push d'une branche (crée le remote tracking)
+# Premier push d'une branche (configure le tracking)
 git push -u origin ma-branche
-# Ensuite, tu peux juste faire git push
+# Ensuite : git push suffit
 
-# Récupérer les derniers changements
-git pull origin main         # fetch + merge
-git pull --rebase origin main  # fetch + rebase (historique plus propre)
+# Récupérer les derniers changements (fetch + merge)
+git pull origin main
 
-# Récupérer sans merger
-git fetch origin             # Télécharge mais ne merge pas
-git fetch --all              # Toutes les branches distantes
+# Récupérer les changements sans merger
+git fetch origin
+git fetch --all   # Toutes les branches distantes
 ```
 
 ---
 
-## `.gitignore` — Ce qu'il ne faut jamais versionner
+## `.gitignore` — Ce qu'il ne faut JAMAIS versionner
 
 ```gitignore
-# Dépendances
+# Dépendances (trop lourdes, régénérables)
 node_modules/
 vendor/
 __pycache__/
-*.pyc
 .venv/
+*.pyc
 
-# Build
+# Build (régénérable)
 dist/
 build/
-*.egg-info/
 site/
 
-# Environnement & secrets — JAMAIS commiter ça !
+# Secrets — JAMAIS dans Git !
 .env
 .env.local
 .env.production
 *.key
 *.pem
 secrets/
+credentials.json
 
-# IDE
+# IDE (propre à chaque développeur)
 .vscode/
 .idea/
 *.swp
 
 # OS
-.DS_Store       # macOS
-Thumbs.db       # Windows
+.DS_Store        # macOS
+Thumbs.db        # Windows
 
 # Terraform
 .terraform/
 *.tfstate
 *.tfstate.backup
-*.tfvars        # Si contient des secrets
 
 # Logs
 *.log
@@ -246,19 +318,24 @@ logs/
 ```
 
 !!! tip "gitignore.io"
-    Va sur [gitignore.io](https://www.toptal.com/developers/gitignore) pour générer automatiquement un `.gitignore` adapté à ta stack.
+    [gitignore.io](https://www.toptal.com/developers/gitignore) génère automatiquement un `.gitignore` selon ta stack (Python, Node, Terraform, etc.)
 
 ---
 
-## Voir qui a écrit quoi — `git blame`
+## Voir l'historique
 
 ```bash
-# Voir qui a écrit chaque ligne d'un fichier
-git blame fichier.py
-
-# 3b5f8c2 (Leo 2024-01-15 14:32:11) def calculate():
-# a1d9f4e (Alice 2024-01-20 09:15:33)     result = x + y
+git log                        # Historique complet
+git log --oneline              # Une ligne par commit
+git log --oneline --graph --all  # Avec graphe des branches
+git log -p                     # Avec les diffs de chaque commit
+git log --author="Leo"         # Commits d'un auteur spécifique
+git log --since="2024-01-01"   # Depuis une date
+git log fichier.txt            # Historique d'un fichier
+git show a1b2c3d               # Détails d'un commit spécifique
+git blame fichier.txt          # Qui a écrit chaque ligne
 ```
 
 !!! success "Checkpoint débutant ✅"
-    Tu sais : installer Git, init/clone, add/commit, branches, push/pull, .gitignore, git log.
+    Tu comprends : les 4 zones (Working Dir, Staging, Local Repo, Remote), commits, branches, remotes.
+    Tu sais : init/clone, add/commit, push/pull, .gitignore, git log.

@@ -49,6 +49,7 @@ nav:
   - ⚙️ Ansible:
     - Introduction: ansible/index.md
     - 🟢 Débutant: ansible/debutant.md
+    - 🌐 Galaxy — Installer des rôles: ansible/galaxy.md
     - 🟡 Intermédiaire: ansible/intermediaire.md
     - 🔴 Avancé: ansible/avance.md
   - ☁️ Azure:
