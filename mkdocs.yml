@@ -1,0 +1,111 @@
+site_name: 🚀 DevOps Hub
+site_description: Tutoriels DevOps de débutant à avancé — Terraform, Ansible, Azure, Kubernetes, Git, GitHub, CI/CD
+site_author: leo300000
+site_url: https://leo300000.github.io/devops-hub
+
+theme:
+  name: material
+  language: fr
+  palette:
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/weather-night
+        name: Mode clair
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/weather-sunny
+        name: Mode sombre
+  font:
+    text: Inter
+    code: JetBrains Mono
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+
+repo_name: leo300000/devops-hub
+repo_url: https://github.com/leo300000/devops-hub
+
+nav:
+  - 🏠 Accueil: index.md
+  - 🏗️ Terraform:
+    - Introduction: terraform/index.md
+    - 🟢 Débutant: terraform/debutant.md
+    - 🟡 Intermédiaire: terraform/intermediaire.md
+    - 🔴 Avancé: terraform/avance.md
+  - ⚙️ Ansible:
+    - Introduction: ansible/index.md
+    - 🟢 Débutant: ansible/debutant.md
+    - 🟡 Intermédiaire: ansible/intermediaire.md
+    - 🔴 Avancé: ansible/avance.md
+  - ☁️ Azure:
+    - Introduction: azure/index.md
+    - 🟢 Débutant: azure/debutant.md
+    - 🟡 Intermédiaire: azure/intermediaire.md
+    - 🔴 Avancé: azure/avance.md
+  - 🐳 Kubernetes:
+    - Introduction: kubernetes/index.md
+    - 🟢 Débutant: kubernetes/debutant.md
+    - 🟡 Intermédiaire: kubernetes/intermediaire.md
+    - 🔴 Avancé: kubernetes/avance.md
+  - 🌿 Git:
+    - Introduction: git/index.md
+    - 🟢 Débutant: git/debutant.md
+    - 🟡 Intermédiaire: git/intermediaire.md
+    - 🔴 Avancé: git/avance.md
+  - 🐙 GitHub:
+    - Introduction: github/index.md
+    - 🟢 Débutant: github/debutant.md
+    - 🟡 Intermédiaire: github/intermediaire.md
+    - 🔴 Avancé: github/avance.md
+  - 🔄 CI/CD:
+    - Introduction: cicd/index.md
+    - 🟢 Débutant: cicd/debutant.md
+    - 🟡 Intermédiaire: cicd/intermediaire.md
+    - 🔴 Avancé: cicd/avance.md
+
+plugins:
+  - search:
+      lang: fr
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/leo300000
